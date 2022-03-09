@@ -8,6 +8,23 @@ dotenv.config();
 
 const router = Router();
 
+router.get("/isAuth", (req, res, next) => {
+  const accessToken = req.header("jwt");
+
+  !accessToken
+    ? res.status(400).json({ message: "Invalid token" })
+    : jwt.verify(accessToken, process.env.JWT_SECRET, (err, decoded) => {
+        err
+          ? res
+              .status(400)
+              .json({ auth: false, message: "Failed to authenticate" })
+          : res
+              .status(200)
+              .json({ auth: true, message: "Authentication completed" });
+        next();
+      });
+});
+
 router.post("/signup", async (req, res) => {
   const { user_name, user_password, user_email } = req.body;
 
@@ -41,21 +58,18 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  const { user_name, user_password, user_email } = req.body;
-  console.log(user_name, user_password);
-  !user_name || !user_password
-    ? res.status(400).json({ message: "Empty field: username or password" })
+  const { user_password, user_email } = req.body;
+  !user_email || !user_password
+    ? res.status(400).json({ message: "Empty field: email or password" })
     : connection.query(
-        `SELECT * FROM users WHERE user_name = ?`,
-        [user_name],
+        `SELECT * FROM users WHERE user_email = ?`,
+        [user_email],
         async (err, rows) => {
           if (
             rows.length == 0 ||
             (await helpers.matchPassword(user_password, rows.user_password))
           ) {
-            res
-              .status(400)
-              .json({ message: "Wrong field: username or password" });
+            res.status(400).json({ message: "Wrong field: email or password" });
           } else {
             const id = rows[0].user_id;
             const token = jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -68,10 +82,7 @@ router.post("/login", (req, res) => {
                   process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
               ),
             };
-            res
-              .status(200)
-              .cookie("jwt", token, cookiesOptions)
-              .json({ message: `login completed! token: ${token}` });
+            res.status(200).cookie("jwt", token, cookiesOptions).json(token);
           }
         }
       );

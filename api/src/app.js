@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import mysql from "mysql";
 import config from "./database/config.js";
 import operations from "./routes/operations.js";
@@ -18,12 +19,8 @@ app.set("port", process.env.PORT);
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-//Global variables
-app.use((req, res, next) => {
-  next();
-});
 
 //Routes
 app.use(auth);
