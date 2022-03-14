@@ -1,35 +1,54 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { NavLink } from "react-router-dom";
+import GlobalContext from "../store/GlobalContext";
 import logo from "../assets/images/logo.png";
-import Login from "./Login";
+import OperationModal from "./OperationModal";
+import UserMenu from "./UserMenu";
 
 const Navbar = () => {
+  const { auth, user } = useContext(GlobalContext);
+
   let activeClassName = "text-lime-600 overline decoration-lime-600";
+
+  let [isOpen, setIsOpen] = useState(false);
+
+  function openModal() {
+    setIsOpen(true);
+  }
 
   return (
     <header className="h-28 sm:px-4 bg-white">
-      <nav className="h-full flex items-center font-mono text-lg font-semibold antialiased">
-        <div className="flex items-center space-x-12 w-2/3">
+      {auth ? (
+        <nav className="h-full flex items-center font-sans font-semibold antialiased justify-between">
+          <div className="flex items-center">
+            <NavLink to="/home" className="w-48">
+              <img src={logo} alt="logo" />
+            </NavLink>
+          </div>
+
+          <div className="flex space-x-8">
+            <button
+              type="button"
+              onClick={openModal}
+              className="h-10 px-4 font-semibold text-md rounded-md bg-green-500 text-white"
+            >
+              Nuevo Registro
+              <OperationModal
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                openModal={openModal}
+              />
+            </button>
+            <UserMenu username={user.username} />
+          </div>
+        </nav>
+      ) : (
+        <nav className="h-full flex justify-center items-center">
           <NavLink to="/home" className="w-48">
             <img src={logo} alt="logo" />
           </NavLink>
-          <NavLink
-            to="/home"
-            className={({ isActive }) => (isActive ? activeClassName : "")}
-          >
-            home
-          </NavLink>
-          <NavLink
-            to="/operations"
-            className={({ isActive }) => (isActive ? activeClassName : "")}
-          >
-            operations
-          </NavLink>
-        </div>
-        <div className="flex justify-end w-1/3">
-          <Login />
-        </div>
-      </nav>
+        </nav>
+      )}
     </header>
   );
 };

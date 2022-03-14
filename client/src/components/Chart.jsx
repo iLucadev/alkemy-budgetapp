@@ -25,8 +25,6 @@ const Chart = () => {
     ],
   };
 
-  console.log(data);
-
   const options = {
     plugins: {
       legend: false,
@@ -39,13 +37,16 @@ const Chart = () => {
         display: false,
       },
     },
+    elements: {
+      point: {
+        radius: 0,
+      },
+    },
   };
 
   return (
     <div className="flex justify-center ">
-      <div className="w-36 pb-4 pt-4">
-        <Line data={data} options={options} />
-      </div>
+      <Line data={data} options={options} />
     </div>
   );
 };
