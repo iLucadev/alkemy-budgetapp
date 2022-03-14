@@ -20,7 +20,11 @@ router.get("/isAuth", (req, res, next) => {
               .json({ auth: false, message: "Failed to authenticate" })
           : res
               .status(200)
-              .json({ auth: true, message: "Authentication completed" });
+              .json({
+                auth: true,
+                message: "Authentication completed",
+                decoded,
+              });
         next();
       });
 });
@@ -57,17 +61,18 @@ router.post("/signup", async (req, res) => {
   );
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const { user_password, user_email } = req.body;
+
   !user_email || !user_password
     ? res.status(400).json({ message: "Empty field: email or password" })
-    : connection.query(
+    : await connection.query(
         `SELECT * FROM users WHERE user_email = ?`,
         [user_email],
         async (err, rows) => {
           if (
             rows.length == 0 ||
-            (await helpers.matchPassword(user_password, rows.user_password))
+            (await helpers.matchPassword(user_password, rows[0].user_password))
           ) {
             res.status(400).json({ message: "Wrong field: email or password" });
           } else {
